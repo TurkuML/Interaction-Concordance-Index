@@ -7,10 +7,10 @@ for inferring such models.
 
 This repository provides a reproducible environment for the experiments detailed in the paper. It includes:
 
-  Implementation of the proposed methods.
+  1. Implementation of the proposed A-index.
   
-  Experiment configurations.
+  2. Experiment configurations.
   
-  Data processing scripts.
+  3. Data processing scripts.
   
-  Instructions for running experiments and analyzing results.
+  4. Instructions for running experiments and analyzing results.

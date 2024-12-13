@@ -6,7 +6,7 @@ performance both for interaction prediction models and for machine learning algo
 for inferring such models.
 
 This repository provides a reproducible environment for the experiments detailed in the paper. It includes:
-Implementation of the proposed methods.
-Experiment configurations.
-Data processing scripts.
-Instructions for running experiments and analyzing results.
+  Implementation of the proposed methods.
+  Experiment configurations.
+  Data processing scripts.
+  Instructions for running experiments and analyzing results.

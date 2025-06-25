@@ -1,4 +1,4 @@
-# A-index
+# IC-index
 This repository contains the code, configurations, and resources required to run the experiments described in the paper: Assignment Index: Performance Evaluation for Interaction
 Prediction Methods.
 Assignment index a novel measure of prediction

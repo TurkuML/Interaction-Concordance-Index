@@ -106,8 +106,6 @@ dividing the drugs and targets as equally to the parts as possible,
 but adding a pair primarily to training data and secondarily to validation
 data if its drug or target is not yet included in training or validation
 drugs and targets.
-Modified to split into 4 subsets so that two of them are discarded. This way the training set 
-should be of approximately same size as the training sets in other settings. Commented out at the moment.
 """
 def split_both_in(training_inds, drug_inds, target_inds):
 
@@ -286,7 +284,7 @@ def train_test_splits(drug_inds, target_inds, split_percentage, random_seed):
     # Shuffle the unique drugs and split them so that a wanted percentage of them are considered as area IDIT drugs,
     # rest of them are split in halves into test and validation drugs.
     np.random.shuffle(drugs)
-    index_drugs = int(np.ceil(n_drugs*(1-split_percentage)))
+    index_drugs = int(np.ceil(n_drugs*(split_percentage)))
     drugs_test = drugs[index_drugs:]
 
     # Shuffle the unique targets and split them so that a wanted percentage of them are considered as area IDIT targets,

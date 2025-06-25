@@ -3,7 +3,7 @@ import pandas as pd
 import itertools as it
 import multiprocessing as mp
 import time
-from A_index import cython_assignmentIndex
+from IC_index import InteractionConcordanceIndex
 from rlscore.measure import cindex
 from cindex_measure import cindex_modified
 from statistics import mode
@@ -37,25 +37,22 @@ def group_performance_normalized(measure, y, y_predicted, group_ids):
     return(1- performances_average)
 
 """
-Function to calculate assignment index, concordance index, 
+Function to calculate interaction concordance index, concordance index, 
 and drug and targetwise concordance indices.
 
 Input: A data frame where the first 6 columns are ID_d, ID_t, fold, Y, P_BCF and P_BLF.
 Total number of columns depends of the number of different models whose predictions are
 gathered in the data frame as columns. There are also the predictions for different settings.
 
-Output: The function returns the lists of A-indices, C-indices, R2s and modified R2s for
-all the models including also the oracle model.
+Output: The function returns the lists of IC-indices and all variations of C-indices.
 """
-def calculate_foldwise_A_C_indices(df):
+def calculate_foldwise_IC_C_indices(df):
     folds = set(df['fold'])
-    """
-    Foldwise measures: C- and A-indices.
-    """
+
     C_index_list = []
     C_d_index_list = []
     C_t_index_list = []
-    A_index_list = []
+    IC_index_list = []
     for fold_id in folds:
         df_fold = df.loc[df['fold'] == fold_id,:]
         drug_inds_fold = df_fold.ID_d.values.astype('int32')
@@ -77,22 +74,22 @@ def calculate_foldwise_A_C_indices(df):
             C_t_indices_fold.append(group_performance_normalized(cindex_modified, Y_fold, \
                                                                     P_fold.iloc[:,m].values, target_inds_fold))
 
-        A_indices_fold = cython_assignmentIndex(drug_inds_fold, target_inds_fold, \
+        IC_indices_fold = InteractionConcordanceIndex(drug_inds_fold, target_inds_fold, \
                                                 Y_fold.astype(float), P_fold.to_numpy())
         
         C_index_list.append(C_indices_fold)
         C_d_index_list.append(C_d_indices_fold)
         C_t_index_list.append(C_t_indices_fold)
-        A_index_list.append(A_indices_fold)
+        IC_index_list.append(IC_indices_fold)
     
-    # Averages of the foldwise C- and A-indices.
+    # Averages of the foldwise C- and IC-indices.
     C_indices = pd.DataFrame(np.vstack(C_index_list)).mean()
     C_d_indices = pd.DataFrame(np.vstack(C_d_index_list)).mean()
     C_t_indices = pd.DataFrame(np.vstack(C_t_index_list)).mean()
-    A_indices = pd.DataFrame(np.vstack(A_index_list)).mean()
+    IC_indices = pd.DataFrame(np.vstack(IC_index_list)).mean()
 
     
-    return A_indices, C_indices, C_d_indices, C_t_indices
+    return IC_indices, C_indices, C_d_indices, C_t_indices
 
 
 if __name__ == "__main__":
@@ -110,7 +107,7 @@ if __name__ == "__main__":
         # file sklearn_predictions.py, replace those names by "sklearnStyle".
         for m in ["KRLS", "kNN", "ltr", "RF", "XGBoost", "DDTA", "FF", "GT"]: 
             try:
-                df_list.append(pd.read_csv('Puhti predictions/predictions_'+m+'_'+ds+'.csv'))
+                df_list.append(pd.read_csv('predictions_'+m+'_'+ds+'.csv'))
             except:
                 continue 
 
@@ -133,13 +130,13 @@ if __name__ == "__main__":
         
         time_start = time.time()
         
-        A_indices, C_indices, C_d_indices, C_t_indices = calculate_foldwise_A_C_indices(df_all)
+        IC_indices, C_indices, C_d_indices, C_t_indices = calculate_foldwise_IC_C_indices(df_all)
         
         df_ds.append(pd.DataFrame({'data':ds, 'model':df_all.columns[4:].to_flat_index(), \
-                                   'A_index': A_indices, 'C_index':C_indices, \
+                                   'IC_index': IC_indices, 'C_index':C_indices, \
                                    'C_d_index':C_d_indices, 'C_t_index':C_t_indices})) 
   
         print("Calculations finished in time", time.time()-time_start)
     
     # Save all the results in a .csv file. 
-    pd.concat(df_ds, ignore_index = True).to_csv('performances_20122024.csv', index = False)
+    pd.concat(df_ds, ignore_index = True).to_csv('performances.csv', index = False)

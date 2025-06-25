@@ -5,7 +5,7 @@ from sklearn_predictions import concatenate_features
 import time
 import data
 from ltr_wrapper import ltr_cls
-from A_index import cython_assignmentIndex
+from IC_index import InteractionConcordanceIndex
 from rlscore.measure import cindex
 from cindex_measure import cindex_modified
 from performance import group_performance_normalized
@@ -136,11 +136,11 @@ def simulation(rn_generator, n_drugs = 100, n_targets = 100, k_f = 0.25, \
         # Calculate the accuracy.
         accuracies.append(np.mean(np.heaviside(Y_test*df_all.iloc[:,m].values, 1/2)))
     
-    # Calculate A-indices for all models at once. 
-    A_indices = cython_assignmentIndex(row_test, col_test, \
+    # Calculate IC-indices for all models at once. 
+    IC_indices = InteractionConcordanceIndex(row_test, col_test, \
                                             Y_test, df_all.iloc[:,3:].to_numpy())
     
-    performance = pd.DataFrame({'random_seed':random_seed, 'model':df_all.columns[3:], 'A_index': A_indices, \
+    performance = pd.DataFrame({'random_seed':random_seed, 'model':df_all.columns[3:], 'IC_index': IC_indices, \
                                 'accuracy':accuracies, 'C_index':C_indices, \
                                 'C_d_index':C_d_indices, 'C_t_index':C_t_indices})
     print("Predictions and performances calculated with every method", \

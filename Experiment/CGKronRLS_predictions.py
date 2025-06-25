@@ -12,7 +12,7 @@ from rlscore.kernel import GaussianKernel, LinearKernel
 from rlscore.learner import CGKronRLS
 from rlscore.measure import cindex, sqerror
 import data
-from A_index import cython_assignmentIndex
+from IC_index import InteractionConcordanceIndex
 
 def pko_kronecker(K1, K2, rows1, cols1, rows2, cols2):
     pko = PairwiseKernelOperator([K1], [K2], [rows1], [cols1], [rows2], [cols2], weights=[1.0])
@@ -71,13 +71,13 @@ class CallBack(object):
             self.C_best_iter = 0
             self.index_CI = np.where(self.perf_measures == "C-index")[0][0]
             self.best_models[self.index_CI] = [self.C_best_learner, self.C_best_perf, self.C_best_iter]
-        if any(self.perf_measures == "A-index"):
-            self.A_index = True
-            self.A_best_perf = 0
-            self.A_best_learner = None
-            self.A_best_iter = 0
-            self.index_AI = np.where(self.perf_measures == "A-index")[0][0]
-            self.best_models[self.index_AI] = [self.A_best_learner, self.A_best_perf, self.A_best_iter]
+        if any(self.perf_measures == "IC-index"):
+            self.IC_index = True
+            self.IC_best_perf = 0
+            self.IC_best_learner = None
+            self.IC_best_iter = 0
+            self.index_IC = np.where(self.perf_measures == "IC-index")[0][0]
+            self.best_models[self.index_IC] = [self.IC_best_learner, self.IC_best_perf, self.IC_best_iter]
 
     def callback(self, learner):
         P = self.pko.matvec(learner.A)
@@ -109,23 +109,23 @@ class CallBack(object):
                 # The best model with C-index is already found, no need to continue calculating these.
                 self.C_index = False
 
-        if self.A_index:
-            perf = cython_assignmentIndex(self.drug_inds, self.target_inds, self.Y, P.reshape((P.shape[0],1)))[0]
-            # Save the model with the highest A-index.
-            if perf > self.A_best_perf:
-                self.A_best_perf = perf
-                self.A_best_iter = self.iter
-                self.A_best_learner = predictor
+        if self.IC_index:
+            perf = InteractionConcordanceIndex(self.drug_inds, self.target_inds, self.Y, P.reshape((P.shape[0],1)))[0]
+            # Save the model with the highest IC-index.
+            if perf > self.IC_best_perf:
+                self.IC_best_perf = perf
+                self.IC_best_iter = self.iter
+                self.IC_best_learner = predictor
                 # Update also the list of the best models
-                self.best_models[self.index_AI] = [self.A_best_learner, self.A_best_perf, self.A_best_iter]
-            if self.iter > self.A_best_iter + self.earlyStopLag:
-                # The best model with A-index is already found, no need to continue calculating these.
-                self.A_index = False
+                self.best_models[self.index_IC] = [self.IC_best_learner, self.IC_best_perf, self.IC_best_iter]
+            if self.iter > self.IC_best_iter + self.earlyStopLag:
+                # The best model with IC-index is already found, no need to continue calculating these.
+                self.IC_index = False
         
         # Start the next iteration once the performance on the current iteration is measured with all performance measures.
         self.iter += 1
         # Raise an error if the early stop criteria is met with every performance measure
-        if (not self.MSE) and (not self.C_index) and (not self.A_index):
+        if (not self.MSE) and (not self.C_index) and (not self.IC_index):
             raise ValueError(self.best_models)
             
     def finished(self, learner):
@@ -248,14 +248,14 @@ def predictions(params):
         'P':P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
             'hyperparameter':str({'regparam':hp_best}), 'perf_measure':"C-index"}))
     
-    if any(perf_measures == "A-index"):
-        index_pm = np.where(perf_measures == "A-index")[0][0]
+    if any(perf_measures == "IC-index"):
+        index_pm = np.where(perf_measures == "IC-index")[0][0]
         index_regparam_best = np.argmax([performances[index_pm] for performances in kronRLS_performances])
         hp_best = hyperparams[index_regparam_best]
         P_test = pko_test.matvec(kronRLS_predictors[index_regparam_best][index_pm])
         df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
         'P':P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str({'regparam':hp_best}), 'perf_measure':"A-index"}))
+            'hyperparameter':str({'regparam':hp_best}), 'perf_measure':"IC-index"}))
         
     print(setting, model, fold_id, "calculated in time", time.time()-time_start_hp)
     """
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     random_seeds = ss.generate_state(repetitions)
     datasets = ["davis", "metz", "kiba", "merget", "GPCR", "IC", "E"]
     split_percentage = 1.0/3
-    perf_measures = np.array(["A-index", "MSE", "C-index"])
+    perf_measures = np.array(["IC-index", "MSE", "C-index"])
 
     """
     Determine the algorithms and their parameters here.

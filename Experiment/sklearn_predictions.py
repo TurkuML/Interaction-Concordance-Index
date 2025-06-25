@@ -10,7 +10,7 @@ import itertools as it
 import pandas as pd
 import multiprocessing as mp
 from rlscore.measure import sqerror, cindex
-from A_index import cython_assignmentIndex
+from IC_index import InteractionConcordanceIndex
 import numpy as np
 from sklearn.model_selection import ParameterGrid
 
@@ -76,7 +76,7 @@ def predictions(params):
     # Which performance measures are used at validation phase.
     MSE = False
     C_index = False
-    A_index = False
+    IC_index = False
     if any(perf_measures == "MSE"):
         MSE = True
         MSE_perf_best = np.inf
@@ -89,11 +89,11 @@ def predictions(params):
         C_P_test = []
         C_hp_best = 0
 
-    if any(perf_measures == "A-index"):
-        A_index = True
-        A_perf_best = 0
-        A_P_test = []
-        A_hp_best = 0
+    if any(perf_measures == "IC-index"):
+        IC_index = True
+        IC_perf_best = 0
+        IC_P_test = []
+        IC_hp_best = 0
 
     # Create a regressor object with parameter values that will not be optimized.
     regressor = model(**parameters)
@@ -119,8 +119,8 @@ def predictions(params):
                 C_hp_best = hp_dict
                 C_P_test = P_test
 
-        if A_index:
-            perf_validation = cython_assignmentIndex(validation_drug_inds, validation_target_inds, \
+        if IC_index:
+            perf_validation = InteractionConcordanceIndex(validation_drug_inds, validation_target_inds, \
                 Y_validation, P_validation.reshape((P_validation.shape[0],1)))
             if perf_validation > A_perf_best:
                 A_perf_best = perf_validation
@@ -137,10 +137,10 @@ def predictions(params):
         df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
         'P':C_P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
             'hyperparameter':str(C_hp_best), 'perf_measure':"C-index"}))
-    if A_index:
+    if IC_index:
         df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
         'P':A_P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str(A_hp_best), 'perf_measure':"A-index"}))
+            'hyperparameter':str(A_hp_best), 'perf_measure':"IC-index"}))
     print(setting, model, fold_id, "calculated in time", time.time()-time_start_hp_optimization)
     """
     The part that is specifically for algorithms that are used in sklearn style ends here.
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     random_seeds = ss.generate_state(repetitions)
     datasets = ["davis", "metz", "kiba", "merget", "GPCR", "IC", "E"]
     split_percentage = 1.0/3
-    perf_measures = np.array(["A-index", "MSE", "C-index"])
+    perf_measures = np.array(["IC-index", "MSE", "C-index"])
 
     for ds in datasets:
         df_list = []

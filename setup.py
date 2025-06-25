@@ -3,6 +3,6 @@ from Cython.Build import cythonize
 import numpy
 
 setup(
-    ext_modules = cythonize(["A_index.pyx", "swapped.pyx"]),
+    ext_modules = cythonize(["IC_index.pyx", "swapped.pyx"]),
     include_dirs=[numpy.get_include()]
 )

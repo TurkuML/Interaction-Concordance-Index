@@ -12,16 +12,6 @@ All elements in a group are taken as a subset for which the performance is calcu
 Returns average performance over the groups. Normalized version takes into account
 the numbers of elements in the groups. 
 """
-def group_performance(measure, y, y_predicted, group_ids):
-    performances = []
-    for i in set(group_ids):
-        y_subset = y[group_ids == i]
-        y_predicted_subset = y_predicted[group_ids == i]
-        if len(set(y_subset)) > 1:
-            performances.append(measure(y_subset, y_predicted_subset))
-    performances_average = np.mean(performances)
-    return(performances_average)
-
 def group_performance_normalized(measure, y, y_predicted, group_ids):
     performances = []
     for i in set(group_ids):

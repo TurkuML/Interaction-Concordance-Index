@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-import itertools as it
-import multiprocessing as mp
 import time
 from IC_index import InteractionConcordanceIndex
 from rlscore.measure import cindex

@@ -5,7 +5,7 @@ This folder contains the files that were used to run the experiments in the pape
 2. Run setup.py in order to be able to use the function InteractionConcordanceIndex in the way how it is used in the experiment files.
 
 ## Dependencies
-The experimental study was run by using Python 3.8.8 and visualized by using R version 4.4.1. The following libraries are needed for repeating the study according to the following instructions. Other libraries are needed as well, if the predictions are wanted to be run.
+The experimental study was run by using Python 3.8.8 and visualized by using R version 4.4.1. The following libraries are needed for repeating the study according to the following instructions. Other libraries are needed as well, if the predictions are wanted to be calculated.
 ### Python
 - NumPy (1.20.3)
 - pandas (2.0.3)

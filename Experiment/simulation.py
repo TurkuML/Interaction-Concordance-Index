@@ -11,6 +11,15 @@ from cindex_measure import cindex_modified
 from performance import group_performance_normalized
 import multiprocessing as mp
 
+"""
+Function to generate a sparse pairwise data set coresponding to the XOR problem.
+
+Input: random seed without a default value, dimensions of the two domains, 
+percentage of the known labels in the pairwise label matrix, strenght of the noise added to the data,
+and percentages representing the rowwise and columnwise imbalances of the XOR problem.
+
+Output 5 numpy arrays: two domain feature matrices, labels, row and column indices for the known pairs.
+"""
 def generate_data(randomSeed, n_dim1 = 100, n_dim2 = 100, known_fraction = 0.25,\
                   p_flipped = 1/12, row_imbalance = 0.2, col_imbalance = 0.2):
     np.random.seed(randomSeed)
@@ -18,30 +27,54 @@ def generate_data(randomSeed, n_dim1 = 100, n_dim2 = 100, known_fraction = 0.25,
     X1 = np.identity(n_dim1, dtype='float64')
     X2 = np.identity(n_dim2, dtype='float64')
 
+    # Randomly select which pairs are known and get their row and column indices.
     known_pairs = np.random.choice(a = [0,1], size = n_dim1*n_dim2, replace = True, p = [1-known_fraction, known_fraction])
     pair_indicator_matrix = np.reshape(known_pairs, (n_dim1, n_dim2))
     row_inds, col_inds = np.where(pair_indicator_matrix == 1)
     
+    # Determine the labels for the known pairs based on using the XOR function on the row and column indices.
     Y = (-1)**(row_inds < n_dim1*row_imbalance)*(-1)**(col_inds < n_dim2*col_imbalance)
 
-    # "Coin flip" randomness
+    # Add noise to the data by "Coin flip" randomness.
     flipped = np.random.choice(a = [-1,1], size = len(Y), replace = True, \
                                 p = [p_flipped, 1-p_flipped])
     Y = Y*flipped
  
     return X1, X2, Y.astype('float64'), row_inds.astype(int), col_inds.astype(int)
 
+"""
+Function that can be used for calculating the rowwise and columnwise sums.
+
+Input: arrays of labels, IDs of the training data and corresponding IDs of the test data.
+
+Output: array of prediction.
+"""
 def group_sum(y, train_group_ids, test_group_ids):
+    # Initialize the prediction to be 0 if the test ID does not exist in the training data.
     g_sum = np.zeros(len(test_group_ids))
+
+    # Go through the IDs in the test data.
     for i in set(test_group_ids):
+        # Take a subset of the training data that corresponds to that ID.
         y_subset = y[train_group_ids == i]
+        # If the test ID existed in the training data, calculate the sum of the labels in that group.
         if len(y_subset) > 0:
             g_sum[test_group_ids == i] = np.sum(y_subset)            
     return(g_sum.astype('float64'))
 
+"""
+Function to run the whole simulation.
+
+Input: random number generator for generating a random seed, default values of the drugs, targets, 
+fraction of known pairs, row and column imbalances, noise and percentage of test data in the whole data
+given as used in the paper.
+
+Output: a data frame, where are collected all the performance measures for all the models used in the simulation study.
+"""
 def simulation(rn_generator, n_drugs = 100, n_targets = 100, k_f = 0.25, \
                row_imbalance = 0.10, col_imbalance = 0.20, p_flip = 1/20, split_percentage = 0.5):
     time_start_data = time.time()
+    # Generate a random seed.
     random_seed = rn_generator.generate_state(1)[0]
     # Generate imbalanced XOR data
     X1, X2, Y, row_inds, col_inds = generate_data(random_seed, n_dim1 = n_drugs, n_dim2 = n_targets, \
@@ -49,7 +82,6 @@ def simulation(rn_generator, n_drugs = 100, n_targets = 100, k_f = 0.25, \
                                                     row_imbalance=row_imbalance, col_imbalance=col_imbalance)
     # Split the data into training, testing and validation sets for all four settings.
     df, splits = data.train_test_splits(row_inds, col_inds, split_percentage, random_seed)
-    
     test_inds = splits[0][1]
     Y_test = Y[test_inds]
     row_test = row_inds[test_inds]
@@ -57,6 +89,7 @@ def simulation(rn_generator, n_drugs = 100, n_targets = 100, k_f = 0.25, \
     X_test = concatenate_features(X1, X2, row_test, col_test)
     
     df_list = []
+    # Go through the four different settings.
     for split_ind in range(4):
         # The splits for different settings are in the following order based on the
         # train_test_splits function. 
@@ -118,11 +151,13 @@ def simulation(rn_generator, n_drugs = 100, n_targets = 100, k_f = 0.25, \
     df_all.columns.values[2] = 'Y'
     df_all.columns = df_all.columns.to_flat_index()
     
+    # Initialize lists where C-index based measures and accuracies are collected for the different hypotheses.
     C_indices = []
     C_d_indices = []
     C_t_indices = []
     accuracies = []
     
+    # Calculate the performance measures with the predictions made by different hypotheses.
     for m in range(3, len(df_all.columns)):
         
         # Calculate global C-index.
@@ -136,10 +171,11 @@ def simulation(rn_generator, n_drugs = 100, n_targets = 100, k_f = 0.25, \
         # Calculate the accuracy.
         accuracies.append(np.mean(np.heaviside(Y_test*df_all.iloc[:,m].values, 1/2)))
     
-    # Calculate IC-indices for all models at once. 
+    # Calculate IC-indices for all hypotheses at once. 
     IC_indices = InteractionConcordanceIndex(row_test, col_test, \
                                             Y_test, df_all.iloc[:,3:].to_numpy())
     
+    # Collect all performance measure values in a data frame, and return it.
     performance = pd.DataFrame({'random_seed':random_seed, 'model':df_all.columns[3:], 'IC_index': IC_indices, \
                                 'accuracy':accuracies, 'C_index':C_indices, \
                                 'C_d_index':C_d_indices, 'C_t_index':C_t_indices})

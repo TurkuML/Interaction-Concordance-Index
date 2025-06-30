@@ -11,6 +11,10 @@ Function to calculate drug or targetwise performance measures.
 All elements in a group are taken as a subset for which the performance is calculated. 
 Returns average performance over the groups. Normalized version takes into account
 the numbers of elements in the groups. 
+
+Input: performance measure function, arrays of labels, predictions and IDs that determine the group.
+
+Output: prediction performance within the group measured by the given performance measure.
 """
 def group_performance_normalized(measure, y, y_predicted, group_ids):
     performances = []

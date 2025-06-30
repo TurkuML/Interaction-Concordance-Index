@@ -7,7 +7,7 @@ from cindex_measure import cindex_modified
 from statistics import mode
 
 """
-Functions to calculate drug or targetwise performance measures. 
+Function to calculate drug or targetwise performance measures. 
 All elements in a group are taken as a subset for which the performance is calculated. 
 Returns average performance over the groups. Normalized version takes into account
 the numbers of elements in the groups. 
@@ -28,25 +28,31 @@ def group_performance_normalized(measure, y, y_predicted, group_ids):
 Function to calculate interaction concordance index, concordance index, 
 and drug and targetwise concordance indices.
 
-Input: A data frame where the first 6 columns are ID_d, ID_t, fold, Y, P_BCF and P_BLF.
-Total number of columns depends of the number of different models whose predictions are
-gathered in the data frame as columns. There are also the predictions for different settings.
+Input: A data frame where the first 4 columns are ID_d, ID_t, fold and Y.
+Total number of columns depends of the number of different hypotheses whose predictions are
+gathered in the data frame as columns. These contain also the predictions for the different settings.
 
 Output: The function returns the lists of IC-indices and all variations of C-indices.
 """
 def calculate_foldwise_IC_C_indices(df):
     folds = set(df['fold'])
 
+    # Initialize lists for collecting the foldwise performances.
     C_index_list = []
     C_d_index_list = []
     C_t_index_list = []
     IC_index_list = []
+
+    # Go through the folds.
     for fold_id in folds:
+        # Take a subset of data containing only rows related to the current fold.
         df_fold = df.loc[df['fold'] == fold_id,:]
         drug_inds_fold = df_fold.ID_d.values.astype('int32')
         target_inds_fold = df_fold.ID_t.values.astype('int32')
         Y_fold = df_fold.Y.values
         P_fold = df_fold.iloc[:,4:]
+
+        # Initialize lists for collecting the C-index based performance measures for the different hypotheses.
         C_indices_fold = []
         C_d_indices_fold = []
         C_t_indices_fold = []
@@ -62,15 +68,17 @@ def calculate_foldwise_IC_C_indices(df):
             C_t_indices_fold.append(group_performance_normalized(cindex_modified, Y_fold, \
                                                                     P_fold.iloc[:,m].values, target_inds_fold))
 
+        # Calculate IC-indices for all hypotheses at once. 
         IC_indices_fold = InteractionConcordanceIndex(drug_inds_fold, target_inds_fold, \
                                                 Y_fold.astype(float), P_fold.to_numpy())
         
+        # Add the performance measure values related to this fold to the lists where all foldwise values are collected.
         C_index_list.append(C_indices_fold)
         C_d_index_list.append(C_d_indices_fold)
         C_t_index_list.append(C_t_indices_fold)
         IC_index_list.append(IC_indices_fold)
     
-    # Averages of the foldwise C- and IC-indices.
+    # Calculate the averages of the foldwise C- and IC-indices.
     C_indices = pd.DataFrame(np.vstack(C_index_list)).mean()
     C_d_indices = pd.DataFrame(np.vstack(C_d_index_list)).mean()
     C_t_indices = pd.DataFrame(np.vstack(C_t_index_list)).mean()
@@ -90,11 +98,9 @@ if __name__ == "__main__":
         print("Calculation of performance measures started for data", ds)
         df_list = []
         # List the algorithms for which the performances are calculated.
-        # Now the algorithms that are used in sklearn style are listed separately,
-        # because they were run like that, but if they were run as they are now in the 
-        # file sklearn_predictions.py, replace those names by "sklearnStyle".
         for m in ["KRLS", "kNN", "ltr", "RF", "XGBoost", "DDTA", "FF", "GT"]: 
             try:
+                # Modify the path if the predictions are not in the same folder as this file.
                 df_list.append(pd.read_csv('predictions_'+m+'_'+ds+'.csv'))
             except:
                 continue 
@@ -112,7 +118,7 @@ if __name__ == "__main__":
         
         # Spread the predictions of different models from one column to several columns. 
         df_all = df.pivot_table(index = ['ID_d','ID_t', 'fold', 'Y'], values = 'P', \
-                                columns = ['setting', 'model', 'perf_measure']).reset_index()
+                                columns = ['setting', 'model']).reset_index()
         
         print(df_all)
         

@@ -26,8 +26,3 @@ The experimental study was run by using Python >= 3.8.8 and visualized by using 
 ## Simulation study
 1. Run simulation.py to repeat the whole simulation study.
 2. Use the file figures_simulation.R to summarise and visualize the results.
-
-
-It would be time demanding to repeat the experiment starting from running all the algorithms to obtain the predictions. To make it possible to veirfy our results, the predictions that we had for the real-world data sets are shared in https://seafile.utu.fi/d/894492d8fe1c44dd9dec/. After downloading them, it is enough to run the file performance.py and eventually visualize the results as in file figures_real.R. Make sure to have run the setup.py file before trying to use the InteractionConcordanceIndex function. 
-
-In addition, the simulation can be fully repeated, as it does not take too much time to be run. The values produces by the performance measures are saved for every random seed, and again the results can be summarised and visualized by the R code in file figures_simulation.R.

@@ -5,19 +5,19 @@ This folder contains the files that were used to run the experiments in the pape
 2. Run setup.py in order to be able to use the function InteractionConcordanceIndex in the way how it is used in the experiment files.
 
 ## Dependencies
-The experimental study was run by using Python >= 3.8.8 and visualized by using R version 4.4.1. The following libraries are needed for repeating the study according to the following instructions. Other libraries are needed as well, if the predictions are wanted to be run.
+The experimental study was run by using Python 3.8.8 and visualized by using R version 4.4.1. The following libraries are needed for repeating the study according to the following instructions. Other libraries are needed as well, if the predictions are wanted to be run.
 ### Python
-- Numpy
-- Pandas
-- RLScore
-- Statistics
-- Multiprocessing
+- NumPy (1.20.3)
+- pandas (2.0.3)
+- RLScore (0.8)
+- statistics
+- multiprocessing
 ### R
-- stringi
-- ggplot2
-- reshape2
-- dplyr
-- patchwork
+- stringi (1.8.4)
+- ggplot2 (3.5.1)
+- reshape2 (1.4.4)
+- dplyr (1.1.4)
+- patchwork (1.2.0)
 
 ## Experiment with the real-world data sets
 1. Download the predictions from https://seafile.utu.fi/d/894492d8fe1c44dd9dec/.

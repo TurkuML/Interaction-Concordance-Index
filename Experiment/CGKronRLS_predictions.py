@@ -1,7 +1,6 @@
 import pandas as pd
 import itertools as it
 import multiprocessing as mp
-import time
 
 import numpy as np
 from rlscore.predictor import KernelPairwisePredictor , LinearPairwisePredictor
@@ -10,9 +9,8 @@ from numpy.random import SeedSequence
 
 from rlscore.kernel import GaussianKernel, LinearKernel
 from rlscore.learner import CGKronRLS
-from rlscore.measure import cindex, sqerror
+from rlscore.measure import sqerror
 import data
-from IC_index import InteractionConcordanceIndex
 
 def pko_kronecker(K1, K2, rows1, cols1, rows2, cols2):
     pko = PairwiseKernelOperator([K1], [K2], [rows1], [cols1], [rows2], [cols2], weights=[1.0])
@@ -23,10 +21,6 @@ def pko_linear(K1, K2, rows1, cols1, rows2, cols2):
     m, k = K2.shape#[0]
     O1 = np.ones((n, d))
     O2 = np.ones((m, k))
-    #print("pko_linear:")
-    #print(K1.shape, O2.shape)
-    #print(O1.shape, K2.shape)
-    #print(rows1.max(), cols1.max(), rows2.max(), cols2.max())
     pko = PairwiseKernelOperator([K1, O1], [O2, K2], [rows1, rows1], [cols1, cols1], [rows2, rows2], [cols2, cols2], weights=[1.0, 1.0])
     return pko
 
@@ -44,40 +38,19 @@ def K_to_dense(K, row_inds, col_inds):
 # Class of callback object for cg_kron_rls function.
 class CallBack(object):
 
-    def __init__(self, Y, pko, perf_measures, ID_d, ID_t, ESlag = 10):
+    def __init__(self, Y, pko, ID_d, ID_t, ESlag = 10): 
         self.Y = Y
         self.pko = pko
         self.iter = 1
         self.earlyStopLag = ESlag
-        self.perf_measures = perf_measures
-        self.best_models = [None]*len(perf_measures)
         self.drug_inds = ID_d
         self.target_inds = ID_t
-        self.MSE = False
-        self.C_index = False
-        self.A_index = False
-        
-        if any(self.perf_measures == "MSE"):
-            self.MSE = True
-            self.MSE_best_perf = np.inf
-            self.MSE_best_learner = None
-            self.MSE_best_iter = 0
-            self.index_MSE = np.where(self.perf_measures == "MSE")[0][0]
-            self.best_models[self.index_MSE] = [self.MSE_best_learner, self.MSE_best_perf, self.MSE_best_iter]
-        if any(self.perf_measures == "C-index"):
-            self.C_index = True
-            self.C_best_perf = 0
-            self.C_best_learner = None
-            self.C_best_iter = 0
-            self.index_CI = np.where(self.perf_measures == "C-index")[0][0]
-            self.best_models[self.index_CI] = [self.C_best_learner, self.C_best_perf, self.C_best_iter]
-        if any(self.perf_measures == "IC-index"):
-            self.IC_index = True
-            self.IC_best_perf = 0
-            self.IC_best_learner = None
-            self.IC_best_iter = 0
-            self.index_IC = np.where(self.perf_measures == "IC-index")[0][0]
-            self.best_models[self.index_IC] = [self.IC_best_learner, self.IC_best_perf, self.IC_best_iter]
+
+        self.MSE = True
+        self.MSE_best_perf = np.inf
+        self.MSE_best_learner = None
+        self.MSE_best_iter = 0
+        self.best_models = [self.MSE_best_learner, self.MSE_best_perf, self.MSE_best_iter]
 
     def callback(self, learner):
         P = self.pko.matvec(learner.A)
@@ -91,41 +64,15 @@ class CallBack(object):
                 self.MSE_best_iter = self.iter
                 self.MSE_best_learner = predictor
                 # Update also the list of the best models
-                self.best_models[self.index_MSE] = [self.MSE_best_learner, self.MSE_best_perf, self.MSE_best_iter]
+                self.best_models = [self.MSE_best_learner, self.MSE_best_perf, self.MSE_best_iter]
             if self.iter > self.MSE_best_iter + self.earlyStopLag:
                 # The best model with MSE is already found, no need to continue calculating these.
                 self.MSE = False
         
-        if self.C_index:
-            perf = cindex(self.Y, P)
-            # Save the model with the highest C-index.
-            if perf > self.C_best_perf:
-                self.C_best_perf = perf
-                self.C_best_iter = self.iter
-                self.C_best_learner = predictor
-                # Update also the list of the best models
-                self.best_models[self.index_CI] = [self.C_best_learner, self.C_best_perf, self.C_best_iter]
-            if self.iter > self.C_best_iter + self.earlyStopLag:
-                # The best model with C-index is already found, no need to continue calculating these.
-                self.C_index = False
-
-        if self.IC_index:
-            perf = InteractionConcordanceIndex(self.drug_inds, self.target_inds, self.Y, P.reshape((P.shape[0],1)))[0]
-            # Save the model with the highest IC-index.
-            if perf > self.IC_best_perf:
-                self.IC_best_perf = perf
-                self.IC_best_iter = self.iter
-                self.IC_best_learner = predictor
-                # Update also the list of the best models
-                self.best_models[self.index_IC] = [self.IC_best_learner, self.IC_best_perf, self.IC_best_iter]
-            if self.iter > self.IC_best_iter + self.earlyStopLag:
-                # The best model with IC-index is already found, no need to continue calculating these.
-                self.IC_index = False
-        
         # Start the next iteration once the performance on the current iteration is measured with all performance measures.
         self.iter += 1
-        # Raise an error if the early stop criteria is met with every performance measure
-        if (not self.MSE) and (not self.C_index) and (not self.IC_index):
+        # Raise an error if the early stop criteria is met.
+        if (not self.MSE): 
             raise ValueError(self.best_models)
             
     def finished(self, learner):
@@ -144,7 +91,6 @@ def predictions(params):
     hyperparams = params[4][1] # List of possible values for the hyperparameter to be optimized.
     XD = params[5]
     XT = params[6]
-    perf_measures = params[7]
     
     # Split the indices of the drugs, targets and Y according to the training-test-validation split.
     train_drug_inds = drug_inds[training_inds]
@@ -193,12 +139,11 @@ def predictions(params):
     # Create training kernels to be given to CGKronRLS.
     KD_train, rows_train, rows_train = K_to_dense(KD, train_drug_inds, train_drug_inds)
     KT_train, cols_train, cols_train = K_to_dense(KT, train_target_inds, train_target_inds)
-    # This is how Markus had created test kernels, but we do this now for the validation set. 
+    # Create the kernels for the validation set. 
     KD_validation, rows_validation1, rows_validation2 = K_to_dense(KD, validation_drug_inds, train_drug_inds)
     KT_validation, cols_validation1, cols_validation2 = K_to_dense(KT, validation_target_inds, train_target_inds)
     
-    # Test kernels so that both training and validation sets are used for predicting the test set labels.
-    """ I think the current version is just with training set as it is also reported in the manuscript. Verify this!"""
+    # Test kernels so that only training set is used for predicting the test set labels.
     KD_test, rows_test1, rows_test2 = K_to_dense(KD, test_drug_inds, train_drug_inds)
     KT_test, cols_test1, cols_test2 = K_to_dense(KT, test_target_inds, train_target_inds)
     
@@ -212,52 +157,31 @@ def predictions(params):
     kronRLS_performances = []
     kronRLS_MIs = []
     kronRLS_predictors = []
-    time_start_hp = time.time()
+
     # Hyperparameter optimization.
     for hp in hyperparams:
-        cb_validation = CallBack(Y = Y_validation, pko = pko_validation, perf_measures = perf_measures, \
+        cb_validation = CallBack(Y = Y_validation, pko = pko_validation,
             ID_d = validation_drug_inds, ID_t = validation_target_inds, ESlag = parameters[0]['ES_lag'])
         try:
             CGKronRLS(Y = Y_train, pko = pko_train, maxiter = parameters[0]['MI'], regparam = hp, callback = cb_validation)
         except ValueError as err:
-            kronRLS_predictors.append([b[0] for b in err.args[0]])
-            kronRLS_performances.append([b[1] for b in err.args[0]])
-            kronRLS_MIs.append([b[2] for b in err.args[0]])
+            kronRLS_predictors.append([err.args[0][0]])
+            kronRLS_performances.append([err.args[0][1]])
+            kronRLS_MIs.append([err.args[0][2]])
         else:
-            kronRLS_predictors.append([b[0] for b in cb_validation.best_models])
-            kronRLS_performances.append([b[1] for b in cb_validation.best_models])
-            kronRLS_MIs.append([b[2] for b in cb_validation.best_models])
+            kronRLS_predictors.append([cb_validation.best_models[0]])
+            kronRLS_performances.append([cb_validation.best_models[1]])
+            kronRLS_MIs.append([cb_validation.best_models[1]])
     
     # Select the best hyperparameters for the performance measures. 
     df_predictions_list = []
-    if any(perf_measures == "MSE"):
-        index_pm = np.where(perf_measures == "MSE")[0][0]
-        index_regparam_best = np.argmin([performances[index_pm] for performances in kronRLS_performances])
-        hp_best = hyperparams[index_regparam_best]
-        P_test = pko_test.matvec(kronRLS_predictors[index_regparam_best][index_pm])
-        df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
-        'P':P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str({'regparam':hp_best}), 'perf_measure':"MSE"}))
-    
-    if any(perf_measures == "C-index"):
-        index_pm = np.where(perf_measures == "C-index")[0][0]
-        index_regparam_best = np.argmax([performances[index_pm] for performances in kronRLS_performances])
-        hp_best = hyperparams[index_regparam_best]
-        P_test = pko_test.matvec(kronRLS_predictors[index_regparam_best][index_pm])
-        df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
-        'P':P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str({'regparam':hp_best}), 'perf_measure':"C-index"}))
-    
-    if any(perf_measures == "IC-index"):
-        index_pm = np.where(perf_measures == "IC-index")[0][0]
-        index_regparam_best = np.argmax([performances[index_pm] for performances in kronRLS_performances])
-        hp_best = hyperparams[index_regparam_best]
-        P_test = pko_test.matvec(kronRLS_predictors[index_regparam_best][index_pm])
-        df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
-        'P':P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str({'regparam':hp_best}), 'perf_measure':"IC-index"}))
+    index_regparam_best = np.argmin([performances[0] for performances in kronRLS_performances])
+    hp_best = hyperparams[index_regparam_best]
+    P_test = pko_test.matvec(kronRLS_predictors[index_regparam_best][0])
+    df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
+    'P':P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
+        'hyperparameter':str({'regparam':hp_best})})) 
         
-    print(setting, model, fold_id, "calculated in time", time.time()-time_start_hp)
     """
     The part that is specifically for CGKronRLS ends here. 
     """
@@ -274,7 +198,6 @@ if __name__ == "__main__":
     random_seeds = ss.generate_state(repetitions)
     datasets = ["davis", "metz", "kiba", "merget", "GPCR", "IC", "E"]
     split_percentage = 1.0/3
-    perf_measures = np.array(["IC-index", "MSE", "C-index"])
 
     """
     Determine the algorithms and their parameters here.
@@ -295,14 +218,12 @@ if __name__ == "__main__":
     for ds in datasets:
         df_list = []
         print(ds)
-        time_start = time.time()
         XD, XT, Y, drug_inds, target_inds = eval('data.load_'+ds+'()')    
         n_D = XD.shape[0]
         n_T = XT.shape[0]
 
         for random_seed in random_seeds:
             df, splits = data.cv_splits(drug_inds, target_inds, random_seed)
-            print("Splits calculated in time", time.time()-time_start)
             splits_foldwise = list(it.chain.from_iterable(splits))
             n_splits = len(splits_foldwise)
             # Previously the order of splits is fold 0: IDIT, IDOT, ODIT, ODOT, fold 1: IDIT, IDOT, ODIT, ODOT etc.
@@ -310,9 +231,8 @@ if __name__ == "__main__":
             new_order = list(range(0,n_splits, 4))+list(range(1,n_splits, 4))+list(range(2,n_splits, 4))+list(range(3,n_splits, 4))
             splits_settingwise = [splits_foldwise[i] for i in new_order]
             
-            time_start = time.time()
             parameters = it.product([Y], [drug_inds], [target_inds], splits_settingwise, \
-                list(it.product(models, hyperparams)), [XD], [XT], [perf_measures])
+                list(it.product(models, hyperparams)), [XD], [XT]) # , [perf_measures] poistettu lopusta.
             
             # Compute different settings at the same time.
             pool = mp.Pool(processes = 4)
@@ -323,7 +243,6 @@ if __name__ == "__main__":
             df['data_set'] = ds
             df['random_seed'] = random_seed
             df_list.append(df)
-            print("Calculations for the current data set done in time", time.time()-time_start)
             
         # Save the predictions for the data set as csv-file. 
         pd.concat(df_list, ignore_index = True).to_csv('predictions_KRLS_'+ds+'.csv', index = False)

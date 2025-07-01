@@ -5,12 +5,10 @@ from ltr_wrapper import ltr_cls
 
 from numpy.random import SeedSequence
 import data
-import time
 import itertools as it
 import pandas as pd
 import multiprocessing as mp
-from rlscore.measure import sqerror, cindex
-from IC_index import InteractionConcordanceIndex
+from rlscore.measure import sqerror
 import numpy as np
 from sklearn.model_selection import ParameterGrid
 
@@ -39,7 +37,6 @@ def predictions(params):
     hyperparams = params[4][2]
     XD = params[5]
     XT = params[6]
-    perf_measures = params[7]
 
     train_drug_inds = drug_inds[training_inds]
     train_target_inds = target_inds[training_inds]
@@ -73,31 +70,13 @@ def predictions(params):
     X_test = concatenate_features(XD, XT, test_drug_inds, test_target_inds)
     X_validation = concatenate_features(XD, XT, validation_drug_inds, validation_target_inds)
     
-    # Which performance measures are used at validation phase.
-    MSE = False
-    C_index = False
-    IC_index = False
-    if any(perf_measures == "MSE"):
-        MSE = True
-        MSE_perf_best = np.inf
-        MSE_P_test = []
-        MSE_hp_best = 0
-
-    if any(perf_measures == "C-index"):
-        C_index = True
-        C_perf_best = 0
-        C_P_test = []
-        C_hp_best = 0
-
-    if any(perf_measures == "IC-index"):
-        IC_index = True
-        IC_perf_best = 0
-        IC_P_test = []
-        IC_hp_best = 0
+    # Initialize the variables for keeping track of the best model.
+    MSE_perf_best = np.inf
+    MSE_P_test = []
+    MSE_hp_best = 0
 
     # Create a regressor object with parameter values that will not be optimized.
     regressor = model(**parameters)
-    time_start_hp_optimization = time.time()
     for hp_dict in hyperparams:
         regressor.set_params(**hp_dict)
         # Fit the model on training data. 
@@ -105,43 +84,18 @@ def predictions(params):
         P_validation = model_hp.predict(X_validation).astype('float64')
         P_test = model_hp.predict(X_test)
         
-        if MSE:
-            perf_validation = sqerror(Y_validation, P_validation)
-            if perf_validation < MSE_perf_best:
-                MSE_perf_best = perf_validation
-                MSE_hp_best = hp_dict
-                MSE_P_test = P_test
-
-        if C_index:
-            perf_validation = cindex(Y_validation, P_validation)
-            if perf_validation > C_perf_best:
-                C_perf_best = perf_validation
-                C_hp_best = hp_dict
-                C_P_test = P_test
-
-        if IC_index:
-            perf_validation = InteractionConcordanceIndex(validation_drug_inds, validation_target_inds, \
-                Y_validation, P_validation.reshape((P_validation.shape[0],1)))
-            if perf_validation > A_perf_best:
-                A_perf_best = perf_validation
-                A_hp_best = hp_dict
-                A_P_test = P_test
+        perf_validation = sqerror(Y_validation, P_validation)
+        if perf_validation < MSE_perf_best:
+            MSE_perf_best = perf_validation
+            MSE_hp_best = hp_dict
+            MSE_P_test = P_test
 
     # Save the test data predictions with the best hyperparameters for the performance measures. 
     df_predictions_list = []
-    if MSE:
-        df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
-        'P':MSE_P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str(MSE_hp_best), 'perf_measure':"MSE"}))
-    if C_index:
-        df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
-        'P':C_P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str(C_hp_best), 'perf_measure':"C-index"}))
-    if IC_index:
-        df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
-        'P':A_P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
-            'hyperparameter':str(A_hp_best), 'perf_measure':"IC-index"}))
-    print(setting, model, fold_id, "calculated in time", time.time()-time_start_hp_optimization)
+    df_predictions_list.append(pd.DataFrame({'ID_d':test_drug_inds, 'ID_t':test_target_inds, 'Y':Y_test, \
+    'P':MSE_P_test, 'setting':setting, 'fold':fold_id, 'model':str(model)+str(parameters), \
+        'hyperparameter':str(MSE_hp_best)}))
+    
     """
     The part that is specifically for algorithms that are used in sklearn style ends here.
     """
@@ -156,19 +110,16 @@ if __name__ == "__main__":
     random_seeds = ss.generate_state(repetitions)
     datasets = ["davis", "metz", "kiba", "merget", "GPCR", "IC", "E"]
     split_percentage = 1.0/3
-    perf_measures = np.array(["IC-index", "MSE", "C-index"])
 
     for ds in datasets:
         df_list = []
         print(ds)
-        time_start = time.time()
         XD, XT, Y, drug_inds, target_inds = eval('data.load_'+ds+'()')    
         n_D = XD.shape[0]
         n_T = XT.shape[0]
 
         for random_seed in random_seeds:
             df, splits = data.cv_splits(drug_inds, target_inds, random_seed)
-            print("Splits calculated in time", time.time()-time_start)
             splits_foldwise = list(it.chain.from_iterable(splits))
             n_splits = len(splits_foldwise)
             # Previously the order of splits has been fold 0: IDIT, IDOT, ODIT, ODOT, fold 1: IDIT, IDOT, ODIT, ODOT etc.
@@ -198,10 +149,8 @@ if __name__ == "__main__":
             """
             The part that needs to be changed ends here.
             """
-
-            time_start = time.time()
             parameters = it.product([Y], [drug_inds], [target_inds], splits_settingwise, \
-                                    models, [XD], [XT], [perf_measures])
+                                    models, [XD], [XT])
         
             # Compute different cases (models & settings & folds) at the same time.
             pool = mp.Pool(processes = 4)
@@ -212,7 +161,6 @@ if __name__ == "__main__":
             df['data_set'] = ds
             df['random_seed'] = random_seed
             df_list.append(df)
-            print("Calculations for the current data set done in time", time.time()-time_start)
             
         # Save the predictions for the data set as csv-file. 
         pd.concat(df_list, ignore_index = True).to_csv('predictions_sklearnStyle_'+ds+'.csv', index = False)

@@ -7,9 +7,9 @@ example_rows = np.repeat(range(5), 7)
 example_cols = np.array(list(range(7))*5)
 # Generate random labels within range [0.0, 1.0).
 example_Y = np.random.rand(35)
-# Generate 4 columns of random predictions within range [0.0, 1.0) to demonstrate the use with predictions made by several "hypotheses"
-# and a column of constant predictions to see that it really produces the expected IC-index. 
-# example_P = np.hstack((np.random.rand(35, 4), np.ones((35,1))))
+# Generate constant predictions. Note that the function InteractionConcordanceIndex requires the predictions is a two-dimensional shape. 
+# If there is more than one column, the method calculates the IC-indices separately for each column and thus returns as many values as 
+# there are columns in the prediction matrix.
 example_P = np.ones((35,1))
 
 # Calculate the IC-indices at once for all the different "hypotheses".

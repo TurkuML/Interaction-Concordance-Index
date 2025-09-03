@@ -3,7 +3,36 @@ This repository contains the code of the generalization performance evaluation m
 It is a novel measure of prediction 
 performance both for interaction prediction models and for machine learning algorithms used for inferring such models. The data required by the method are pairwise data indices of the two domains, labels and predictions.
 
+## Files
 The code is provided as a Cython implementation for calculating the IC-index in the file IC_index.pyx as a function named InteractionConcordanceIndex. The implementation utilizes the count_swapped function from the file swapped.pyx. Thus both of these files need to be compiled by the setup.py file before being able to use the functions. A small example that demonstrates how to use the InteractionConcordanceIndex is given in file example.py. 
 
+<table align = "center">
+    <tr>
+        <th> File name </th>
+        <th> File purpose </th>
+    </tr>
+    <tr>
+        <td> IC_index.pyx </td>
+        <td> Cython implementation of the method as a function named InteractionConcordanceIndex. </td>
+    </tr>
+    <tr>
+        <td> swapped.pyx </td>
+        <td> Contains the Cython implementation of count_swapped function needed as part of InteractionConcordanceIndex function. </td>
+    </tr>
+    <tr>
+        <td> setup.py </td>
+        <td> File to Cythonize the Cython files. </td>
+    </tr>
+    <tr>
+        <td> example.py </td>
+        <td> A toy example of using the InteractionConcordanceIndex. </td>
+    </tr>
+
+## Example
 In the example, a simple pairwise data set of 5 elements in one domain and 7 in another is generated. The generated data are complete, i.e. the labels are generated for every possible pair, but it does not have to be. The predictions are given to the measure as a matrix, where each column corresponds to the predictions of one method.
 *TO DO: modify the code so that the default is that there are predictions only for one method given similarly to the labels.*
+
+### Steps needed to test the method by the example
+- Run setup.py.
+- Run example.py.
+- Notice that the value of the IC-index is 0.5 in the given example.

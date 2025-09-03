@@ -32,6 +32,6 @@ In the example, a simple pairwise data set of 5 elements in one domain and 7 in 
 *TO DO: modify the code so that the default is that there are predictions only for one method given similarly to the labels.*
 
 ### Steps needed to test the method by the example
-- Run 'python setup.py build_ext --inplace'. *Tarkista että oli näin!*
-- Run 'python example.py'.
+- Run `python setup.py build_ext --inplace`. *Tarkista että oli näin!*
+- Run `python example.py`.
 - Notice that the value of the IC-index is 0.5 in the given example.

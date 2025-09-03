@@ -11,11 +11,11 @@ performance both for interaction prediction models and for machine learning algo
     </tr>
     <tr>
         <td> IC_index.pyx </td>
-        <td> Cython implementation of the method as a function named *InteractionConcordanceIndex*. </td>
+        <td> Cython implementation of the method as a function named InteractionConcordanceIndex. </td>
     </tr>
     <tr>
         <td> swapped.pyx </td>
-        <td> Contains the Cython implementation of *count_swapped* function needed as part of *InteractionConcordanceIndex*. </td>
+        <td> Contains the Cython implementation of count_swapped function needed as part of InteractionConcordanceIndex. </td>
     </tr>
     <tr>
         <td> setup.py </td>
@@ -23,7 +23,7 @@ performance both for interaction prediction models and for machine learning algo
     </tr>
     <tr>
         <td> example.py </td>
-        <td> A toy example of using the *InteractionConcordanceIndex*. </td>
+        <td> A toy example of using the InteractionConcordanceIndex. </td>
     </tr>
 </table>
 

@@ -27,6 +27,7 @@ The code is provided as a Cython implementation for calculating the IC-index in 
         <td> example.py </td>
         <td> A toy example of using the InteractionConcordanceIndex. </td>
     </tr>
+</table>
 
 ## Example
 In the example, a simple pairwise data set of 5 elements in one domain and 7 in another is generated. The generated data are complete, i.e. the labels are generated for every possible pair, but it does not have to be. The predictions are given to the measure as a matrix, where each column corresponds to the predictions of one method.

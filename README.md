@@ -19,7 +19,7 @@ performance both for interaction prediction models and for machine learning algo
     </tr>
     <tr>
         <td> setup.py </td>
-        <td> File to Cythonize the Cython files. </td>
+        <td> File to compile the cython files. </td>
     </tr>
     <tr>
         <td> example.py </td>

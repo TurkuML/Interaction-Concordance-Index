@@ -1,0 +1,21 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Interaction-Concordance-Index"
+version = "0.1.0"
+authors = [
+    {name = "Tapio Pahikkala"},
+    {name = "Riikka Numminen"},
+    {name = "Parisa Movahedi"},
+    {name = "Napsu Karmitsa"},
+    {name = "Antti Airola"}
+]
+description = "Interaction-Concordance-Index"
+readme = "README.md"
+dependencies = [
+    "cython",
+    "numpy",
+]

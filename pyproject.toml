@@ -28,6 +28,6 @@ dependencies = [
 where = ["src"]
 
 [tool.setuptools.ext-modules]
-your_module = ["src/ic_index/ic_index.pyx"]
+ext_modules = ["src/ic_index/ic_index.pyx"]
 
 

@@ -27,4 +27,7 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.ext-modules]
+your_module = ["src/ic_index/ic_index.pyx"]
+
 

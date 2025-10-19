@@ -1,6 +1,6 @@
 import numpy as np
 cimport numpy as np
-import swapped
+from swapped import count_swapped
 import math
 
 np.import_array()
@@ -102,7 +102,7 @@ def InteractionConcordanceIndex(int[:] ID_dim1, int[:] ID_dim2, double[:] labels
                 P_element2 = predictions_array[ind_element2_dim2Common,m]
                 p_differences = P_element1 - P_element2
                 
-                s = swapped.count_swapped(y_differences, p_differences, rtol, atol)
+                s = count_swapped(y_differences, p_differences, rtol, atol)
                 discordant[m] += s
 
             pairs += n*(n-1)/2 - ties

@@ -29,11 +29,7 @@ where = ["src"]
 
 [tool.setuptools]
 ext-modules = [
-    {
-        name = "ic_index",
-        sources = ["src/ic_index/ic_index.pyx"],
-        include_dirs=["numpy"]
-    }
+    {name = "ic_index", sources = ["src/ic_index/ic_index.pyx"], include_dirs = ["numpy"]}
 ]
 
 

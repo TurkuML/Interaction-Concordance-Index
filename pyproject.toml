@@ -20,16 +20,6 @@ authors = [
 description = "Interaction-Concordance-Index"
 readme = "README.md"
 dependencies = [
-    "cython",
     "numpy",
 ]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools]
-ext-modules = [
-    {name = "ic_index", sources = ["src/ic_index/ic_index.pyx"]}
-]
-
 

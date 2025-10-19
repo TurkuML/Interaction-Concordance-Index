@@ -1,4 +1,4 @@
-import numpy as np
+.import numpy as np
 cimport numpy as np
 cimport swapped
 from .swapped cimport count_swapped

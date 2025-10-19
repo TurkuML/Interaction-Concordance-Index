@@ -23,9 +23,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import cython
 from libc.stdlib cimport malloc, free
-import numpy as np
+#import numpy as np
 cimport numpy as cnp
 
 # using np.isclose, or math.isclose in this cython code affects performance considerably

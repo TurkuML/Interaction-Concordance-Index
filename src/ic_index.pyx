@@ -1,6 +1,6 @@
 import numpy as np
 cimport numpy as np
-from swapped import count_swapped
+from swapped cimport count_swapped
 import math
 
 np.import_array()

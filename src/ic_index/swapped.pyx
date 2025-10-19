@@ -287,7 +287,7 @@ cdef double swapped_pairs(int len1, double *s, int len2, double *f, double rtol,
 #+labels for inequality when two predictions are equal,
 #+and labels for equality when inserting duplicates in the rbtree
 # pass rtol=0.0 and atol=0.0 to require absolute equality
-cdef double count_swapped(cnp.ndarray[cnp.double_t,ndim=1] A, cnp.ndarray[cnp.double_t,ndim=1] B, rtol=1e-14, atol=1e-14):
+def count_swapped(cnp.ndarray[cnp.double_t,ndim=1] A, cnp.ndarray[cnp.double_t,ndim=1] B, rtol=1e-14, atol=1e-14):
     I = np.argsort(B)
     A = A[I]
     B = B[I]

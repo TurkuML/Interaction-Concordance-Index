@@ -1,7 +1,7 @@
+import numpy as np
 cimport numpy as np
-cimport ic_index.swapped
-from ic_index.swapped cimport count_swapped
-cimport math
+from .swapped cimport count_swapped
+import math
 
 np.import_array()
 

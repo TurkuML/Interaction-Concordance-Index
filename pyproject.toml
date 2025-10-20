@@ -8,7 +8,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Interaction-Concordance-Index"
+name = "ic_index"
 version = "0.1.0"
 authors = [
     {name = "Tapio Pahikkala"},
@@ -17,7 +17,7 @@ authors = [
     {name = "Napsu Karmitsa"},
     {name = "Antti Airola"}
 ]
-description = "Interaction-Concordance-Index"
+description = "Interaction concordance index"
 readme = "README.md"
 dependencies = [
     "numpy",

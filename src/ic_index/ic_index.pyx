@@ -1,4 +1,4 @@
-include swapped.pxi
+include "swapped.pxi"
 
 import numpy as np
 cimport numpy as np

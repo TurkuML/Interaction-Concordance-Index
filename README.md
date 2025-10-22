@@ -1,37 +1,34 @@
 # IC-index
-This repository contains the code of the generalization performance evaluation measure called Interaction Concordance Index, which is presented in the paper *Lisää paperin tiedot.*.
-It is a novel measure of prediction 
-performance both for interaction prediction models and for machine learning algorithms used for inferring such models. The data required by the method are pairwise data indices of the two domains, labels and predictions.
+This repository contains an implementation of interaction concordance index, presented in [1].
 
-## Files
-<table align = "center">
-    <tr>
-        <th> File name </th>
-        <th> File purpose </th>
-    </tr>
-    <tr>
-        <td> IC_index.pyx </td>
-        <td> Cython implementation of the method as a function named InteractionConcordanceIndex. </td>
-    </tr>
-    <tr>
-        <td> swapped.pyx </td>
-        <td> Contains the Cython implementation of count_swapped function needed as part of InteractionConcordanceIndex. </td>
-    </tr>
-    <tr>
-        <td> setup.py </td>
-        <td> File to compile the cython files. </td>
-    </tr>
-    <tr>
-        <td> example.py </td>
-        <td> A toy example of using the InteractionConcordanceIndex. </td>
-    </tr>
-</table>
+## Installation:
+- Create a new environment for e.g. Anaconda.
+- Run `pip install git+https://github.com/TurkuML/Interaction-Concordance-Index`
 
-## Example
-In the example, a simple pairwise data set of 5 elements in one domain and 7 in another is generated. The generated data are complete, i.e. the labels are generated for every possible pair, but it does not have to be. The predictions are given to the measure as a matrix, where each column corresponds to the predictions of one method.
-*TO DO: modify the code so that the default is that there are predictions only for one method given similarly to the labels.*
+### Example code for testing in Python interpreter
+```
+import numpy as np
+import ic_index
 
-### Steps needed to test the method by the example
-- Run `python setup.py build_ext --inplace`. *Tarkista että oli näin!*
-- Run `python example.py`.
-- Notice that the value of the IC-index is 0.5 in the given example.
+# Generate random labels
+example_Y = np.random.rand(35)
+# Generate row indices of the pairs
+example_rows = np.repeat(range(5), 7)
+# Generate column indices of the pairs
+example_cols = np.array(list(range(7))*5)
+
+# Calculate IC-index with random predictions, result in [0, 1]:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, np.random.rand(35)))
+
+# Calculate IC-index with correct labels, result 1:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, example_Y))
+
+# Calculate IC-index with reversed labels, result -1:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, -example_Y))
+
+# Calculate IC-index with constant labels, result 0.5:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, np.ones((35))))
+```
+
+## References:
+  [1] Pahikkala, T., Numminen, R., Movahedi, P., Karmitsa, N., & Airola, A. (2025). Interaction Concordance Index: Performance Evaluation for Interaction Prediction Methods. arXiv preprint arXiv:2510.14419.

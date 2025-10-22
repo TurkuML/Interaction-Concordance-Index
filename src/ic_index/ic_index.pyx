@@ -1,6 +1,8 @@
+include "swapped.pxi"
+
 import numpy as np
 cimport numpy as np
-import swapped
+
 import math
 
 np.import_array()
@@ -25,14 +27,12 @@ def round_key(double k, int significant_digits):
     return round(k, tolerance)
 
 
-def count_ties(double[:] my_list, hash_digits):
+def count_ties(double[:] my_list, significant_digits):
     #We get the number of ties in linear time by using a hash table and looking at duplicates
     #k duplicates means k(k-1)/2 additional tied pairs, e.g. in [1,2,3,3,4,3,4,5] you have
     #4 tied pairs, (3,3) thrice and (4,4) once
-    #NOTE: Python dictionary is a hash table
     cdef dict freq = {}
     for item in my_list:
-        item = round_key(item, hash_digits)
         if (item in freq):
             freq[item] += 1
         else:
@@ -45,7 +45,7 @@ def count_ties(double[:] my_list, hash_digits):
     return ties
 
 
-def InteractionConcordanceIndex(int[:] ID_dim1, int[:] ID_dim2, double[:] labels, double[:,:] predictions, double rtol = 1e-14, double atol = 1e-14, hash_digits=14):
+def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const double[:] labels, predictions, double rtol = 1e-14, double atol = 1e-14, significant_digits=14):
 
     # Swap the lists of IDs so that dim1 has fewer elements than dim2.
     if len(set(ID_dim1)) > len(set(ID_dim2)):
@@ -56,8 +56,14 @@ def InteractionConcordanceIndex(int[:] ID_dim1, int[:] ID_dim2, double[:] labels
     cdef np.ndarray dim1_array = np.array(ID_dim1)
     cdef np.ndarray dim2_array = np.array(ID_dim2)
     cdef np.ndarray labels_array = np.array(labels)
-    cdef np.ndarray predictions_array = np.array(predictions)
-    cdef int n_models = predictions_array.shape[1]
+    cdef np.ndarray predictions_array
+    cdef int n_models
+    if predictions.ndim == 1:
+        predictions_array = np.asarray(predictions).reshape(-1, 1)
+        n_models = 1#.shape[1]
+    else:
+        predictions_array = np.array(predictions)
+        n_models = predictions_array.shape[1]
 
 
     cdef set dim1s = set(ID_dim1)
@@ -95,16 +101,19 @@ def InteractionConcordanceIndex(int[:] ID_dim1, int[:] ID_dim2, double[:] labels
             Y_element2 = labels_array[ind_element2_dim2Common]
             y_differences = Y_element1 - Y_element2
 
-            ties = count_ties(y_differences, hash_digits)
+            ties = count_ties(y_differences, significant_digits)
 
             for m in range(n_models):    
                 P_element1 = predictions_array[ind_element1_dim2Common,m]
                 P_element2 = predictions_array[ind_element2_dim2Common,m]
                 p_differences = P_element1 - P_element2
                 
-                s = swapped.count_swapped(y_differences, p_differences, rtol, atol)
+                s = count_swapped(y_differences, p_differences, rtol, atol)
                 discordant[m] += s
 
             pairs += n*(n-1)/2 - ties
 
-    return 1.0 - np.array(discordant)/pairs
+    if predictions.ndim == 1:
+        return 1.0 - discordant[0] / pairs
+    else:
+        return 1.0 - np.array(discordant) / pairs

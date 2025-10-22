@@ -1,9 +1,11 @@
 [build-system]
 # Minimum requirements for the build system to execute.
 requires = [
-    "setuptools",
-    "cython",
-    "numpy",
+    "setuptools>=61",
+    "wheel",
+    "cython>=3.0.0",
+    "numpy>=2.0.0",
+    "oldest-supported-numpy",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -19,7 +21,8 @@ authors = [
 ]
 description = "Interaction concordance index"
 readme = "README.md"
+requires-python = ">=3.11",
 dependencies = [
-    "numpy",
+    "numpy>=2.0.0",
 ]
 

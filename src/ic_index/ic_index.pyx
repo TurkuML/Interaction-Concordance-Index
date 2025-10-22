@@ -47,7 +47,7 @@ def count_ties(double[:] my_list, hash_digits):
     return ties
 
 
-def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, double[:] labels, double[:,:] predictions, double rtol = 1e-14, double atol = 1e-14, hash_digits=14):
+def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const double[:] labels, const predictions, double rtol = 1e-14, double atol = 1e-14, hash_digits=14):
 
     # Swap the lists of IDs so that dim1 has fewer elements than dim2.
     if len(set(ID_dim1)) > len(set(ID_dim2)):
@@ -58,8 +58,12 @@ def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, double[:]
     cdef np.ndarray dim1_array = np.array(ID_dim1)
     cdef np.ndarray dim2_array = np.array(ID_dim2)
     cdef np.ndarray labels_array = np.array(labels)
-    cdef np.ndarray predictions_array = np.array(predictions)
-    cdef int n_models = predictions_array.shape[1]
+    if predictions.ndim == 1:
+        cdef np.ndarray predictions_array = np.asarray(predictions).reshape(-1, 1)#np.array(predictions)
+        cdef int n_models = 1#.shape[1]
+    else:
+        cdef np.ndarray predictions_array = np.array(predictions)
+        cdef int n_models = predictions_array.shape[1]
 
 
     cdef set dim1s = set(ID_dim1)

@@ -62,7 +62,7 @@ def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const dou
     cdef int n_models
     if predictions.ndim == 1:
         predictions_array = np.asarray(predictions).reshape(-1, 1)
-        int n_models = 1#.shape[1]
+        n_models = 1#.shape[1]
     else:
         predictions_array = np.array(predictions)
         n_models = predictions_array.shape[1]

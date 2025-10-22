@@ -2,8 +2,8 @@
 This repository contains an implementation of interaction concordance index, presented in [1].
 
 ## Installation:
-- Create a new environment for e.g. Anaconda
-- Run `pip install git+https://github.com/TurkuML/Interaction-Concordance-Index`.
+- Create a new environment for e.g. Anaconda.
+- Run `pip install git+https://github.com/TurkuML/Interaction-Concordance-Index`
 
 ### Example code for testing in Python interpreter
 ```

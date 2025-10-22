@@ -1,17 +1,23 @@
+
 import numpy as np
-from IC_index import InteractionConcordanceIndex
+import ic_index
 
-# Generate row indices of the pairs.
-example_rows = np.repeat(range(5), 7)
-# Generate column indices of the pairs.
-example_cols = np.array(list(range(7))*5)
-# Generate random labels within range [0.0, 1.0).
+# Generate random labels
 example_Y = np.random.rand(35)
-# Generate constant predictions. Note that the function InteractionConcordanceIndex requires the predictions is a two-dimensional shape. 
-# If there is more than one column, the method calculates the IC-indices separately for each column and thus returns as many values as 
-# there are columns in the prediction matrix.
-example_P = np.ones((35,1))
+# Generate row indices of the pairs
+example_rows = np.repeat(range(5), 7)
+# Generate column indices of the pairs
+example_cols = np.array(list(range(7))*5)
 
-# Calculate the IC-indices at once for all the different "hypotheses".
-IC_indices = InteractionConcordanceIndex(example_rows, example_cols, example_Y, example_P)
-print(IC_indices)
+# Calculate IC-index with random predictions, result in [0, 1]:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, np.random.rand(35)))
+
+# Calculate IC-index with correct labels, result 1:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, example_Y))
+
+# Calculate IC-index with reversed labels, result -1:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, -example_Y))
+
+# Calculate IC-index with constant labels, result 0.5:
+print(ic_index.ic_index(example_rows, example_cols, example_Y, np.ones((35))))
+

@@ -115,4 +115,7 @@ def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const dou
 
             pairs += n*(n-1)/2 - ties
 
-    return 1.0 - np.array(discordant)/pairs
+    if predictions.ndim == 1:
+        return 1.0 - np.array(discordant).reshape(1) / pairs
+    else:
+        return 1.0 - np.array(discordant) / pairs

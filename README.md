@@ -1,7 +1,5 @@
 # IC-index
-This repository contains the code of the generalization performance evaluation measure called Interaction Concordance Index, which is presented in the paper *Lisää paperin tiedot.*.
-It is a novel measure of prediction 
-performance both for interaction prediction models and for machine learning algorithms used for inferring such models. The data required by the method are pairwise data indices of the two domains, labels and predictions.
+This repository contains an implementation of interaction concordance index, presented in [1].
 
 ## Files
 <table align = "center">
@@ -31,7 +29,9 @@ performance both for interaction prediction models and for machine learning algo
 In the example, a simple pairwise data set of 5 elements in one domain and 7 in another is generated. The generated data are complete, i.e. the labels are generated for every possible pair, but it does not have to be. The predictions are given to the measure as a matrix, where each column corresponds to the predictions of one method.
 *TO DO: modify the code so that the default is that there are predictions only for one method given similarly to the labels.*
 
-### Steps needed to test the method by the example
-- Run `python setup.py build_ext --inplace`. *Tarkista että oli näin!*
-- Run `python example.py`.
-- Notice that the value of the IC-index is 0.5 in the given example.
+### Installation:
+- Create a new environment for e.g. Anaconda
+- Run `pip install git+https://github.com/TurkuML/Interaction-Concordance-Index`.
+
+## References:
+  [1] Pahikkala, T., Numminen, R., Movahedi, P., Karmitsa, N., & Airola, A. (2025). Interaction Concordance Index: Performance Evaluation for Interaction Prediction Methods. arXiv preprint arXiv:2510.14419.

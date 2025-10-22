@@ -27,14 +27,12 @@ def round_key(double k, int significant_digits):
     return round(k, tolerance)
 
 
-def count_ties(double[:] my_list, hash_digits):
+def count_ties(double[:] my_list, significant_digits):
     #We get the number of ties in linear time by using a hash table and looking at duplicates
     #k duplicates means k(k-1)/2 additional tied pairs, e.g. in [1,2,3,3,4,3,4,5] you have
     #4 tied pairs, (3,3) thrice and (4,4) once
-    #NOTE: Python dictionary is a hash table
     cdef dict freq = {}
     for item in my_list:
-        item = round_key(item, hash_digits)
         if (item in freq):
             freq[item] += 1
         else:
@@ -47,7 +45,7 @@ def count_ties(double[:] my_list, hash_digits):
     return ties
 
 
-def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const double[:] labels, predictions, double rtol = 1e-14, double atol = 1e-14, hash_digits=14):
+def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const double[:] labels, predictions, double rtol = 1e-14, double atol = 1e-14, significant_digits=14):
 
     # Swap the lists of IDs so that dim1 has fewer elements than dim2.
     if len(set(ID_dim1)) > len(set(ID_dim2)):
@@ -103,7 +101,7 @@ def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const dou
             Y_element2 = labels_array[ind_element2_dim2Common]
             y_differences = Y_element1 - Y_element2
 
-            ties = count_ties(y_differences, hash_digits)
+            ties = count_ties(y_differences, significant_digits)
 
             for m in range(n_models):    
                 P_element1 = predictions_array[ind_element1_dim2Common,m]

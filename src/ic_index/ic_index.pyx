@@ -2,7 +2,7 @@ include "swapped.pxi"
 
 import numpy as np
 cimport numpy as np
-#from .swapped cimport count_swapped
+
 import math
 
 np.import_array()
@@ -47,7 +47,7 @@ def count_ties(double[:] my_list, hash_digits):
     return ties
 
 
-def InteractionConcordanceIndex(int[:] ID_dim1, int[:] ID_dim2, double[:] labels, double[:,:] predictions, double rtol = 1e-14, double atol = 1e-14, hash_digits=14):
+def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, double[:] labels, double[:,:] predictions, double rtol = 1e-14, double atol = 1e-14, hash_digits=14):
 
     # Swap the lists of IDs so that dim1 has fewer elements than dim2.
     if len(set(ID_dim1)) > len(set(ID_dim2)):

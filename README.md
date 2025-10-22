@@ -28,8 +28,8 @@ This repository contains an implementation of interaction concordance index, pre
 ## Usage:
 - import ic_index
 
-## Example
-In the example, a simple data set of 5 elements in one domain and 7 in another is generated. The generated data are complete, i.e. the labels are generated for every possible pair, but it does not have to be.*
+### Example
+- See the code in example.py
 
 ## References:
   [1] Pahikkala, T., Numminen, R., Movahedi, P., Karmitsa, N., & Airola, A. (2025). Interaction Concordance Index: Performance Evaluation for Interaction Prediction Methods. arXiv preprint arXiv:2510.14419.

@@ -58,12 +58,14 @@ def ic_index(const np.int64_t[:] ID_dim1, const np.int64_t[:] ID_dim2, const dou
     cdef np.ndarray dim1_array = np.array(ID_dim1)
     cdef np.ndarray dim2_array = np.array(ID_dim2)
     cdef np.ndarray labels_array = np.array(labels)
+    cdef np.ndarray predictions_array
+    cdef int n_models
     if predictions.ndim == 1:
-        cdef np.ndarray predictions_array = np.asarray(predictions).reshape(-1, 1)#np.array(predictions)
-        cdef int n_models = 1#.shape[1]
+        predictions_array = np.asarray(predictions).reshape(-1, 1)
+        int n_models = 1#.shape[1]
     else:
-        cdef np.ndarray predictions_array = np.array(predictions)
-        cdef int n_models = predictions_array.shape[1]
+        predictions_array = np.array(predictions)
+        n_models = predictions_array.shape[1]
 
 
     cdef set dim1s = set(ID_dim1)

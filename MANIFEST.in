@@ -1,0 +1,2 @@
+recursive-include src *.pyx *.pxi
+exclude src/ic_index/ic_index.c

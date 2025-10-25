@@ -1,10 +1,9 @@
 [build-system]
 # Minimum requirements for the build system to execute.
 requires = [
-    "setuptools>=61",
+    "setuptools>=80",
     "wheel",
-    "cython>=3.0.0",
-    "numpy>=2.0.0",
+    "Cython>=3.0.0",
     "oldest-supported-numpy",
 ]
 build-backend = "setuptools.build_meta"
@@ -19,10 +18,18 @@ authors = [
     {name = "Napsu Karmitsa"},
     {name = "Antti Airola"}
 ]
-description = "Interaction concordance index"
+description = "Standalone Python module providing an implementation of interaction concordance index."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.0.0",
 ]
+classifiers = [
+  "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "https://github.com/TurkuML/Interaction-Concordance-Index"
 

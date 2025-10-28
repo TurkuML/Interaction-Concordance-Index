@@ -1,9 +1,14 @@
 # IC-index
-This repository contains an implementation of interaction concordance index, presented in [1].
+
+An implementation of interaction concordance index as presented in [\[1\]](#ref1).
 
 ## Installation:
-- Create a new environment for e.g. Anaconda.
-- Run `pip install git+https://github.com/TurkuML/Interaction-Concordance-Index`
+
+Run  
+`pip install ic_index`  
+to install from PyPI, or  
+`pip install git+https://github.com/TurkuML/Interaction-Concordance-Index`  
+to install directly from github.
 
 ### Example code for testing in Python interpreter
 ```
@@ -31,4 +36,7 @@ print(ic_index.ic_index(example_rows, example_cols, example_Y, np.ones((35))))
 ```
 
 ## References:
-  [1] Pahikkala, T., Numminen, R., Movahedi, P., Karmitsa, N., & Airola, A. (2025). Interaction Concordance Index: Performance Evaluation for Interaction Prediction Methods. arXiv preprint arXiv:2510.14419.
+
+\[1\] Pahikkala, T., Numminen, R., Movahedi, P., Karmitsa, N., & Airola, A. (2025). [Interaction Concordance Index: Performance Evaluation for Interaction Prediction Methods](https://arxiv.org/abs/2510.14419). arXiv preprint arXiv:2510.14419. <a name="ref1"></a>
+
+

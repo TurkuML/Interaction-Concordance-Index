@@ -28,7 +28,7 @@ print(ic_index.ic_index(example_rows, example_cols, example_Y, np.random.rand(35
 # Calculate IC-index with correct labels, result 1:
 print(ic_index.ic_index(example_rows, example_cols, example_Y, example_Y))
 
-# Calculate IC-index with reversed labels, result -1:
+# Calculate IC-index with reversed labels, result 0:
 print(ic_index.ic_index(example_rows, example_cols, example_Y, -example_Y))
 
 # Calculate IC-index with constant labels, result 0.5:

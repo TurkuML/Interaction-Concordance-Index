@@ -2,15 +2,19 @@
 # Minimum requirements for the build system to execute.
 requires = [
     "setuptools>=80",
+    "setuptools-scm>=8",
     "wheel",
     "Cython>=3.0.0",
     "numpy>=2.0.0",
 ]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools_scm]
+version_file = "src/ic_index/_version.py"
+
 [project]
 name = "ic_index"
-version = "0.1.1"
+dynamic = ["version"]
 authors = [
     {name = "Tapio Pahikkala"},
     {name = "Riikka Numminen"},

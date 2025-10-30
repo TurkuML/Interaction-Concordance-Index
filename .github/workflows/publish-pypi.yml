@@ -8,7 +8,7 @@ on:
 jobs:
   build_wheels:
     name: Build wheels for ${{ matrix.os }}
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
